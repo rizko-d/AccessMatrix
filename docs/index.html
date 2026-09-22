@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="AccessMatrix is a Go API authorization testing CLI for explicit access-control matrices, BOLA regression checks, verified identities, and redacted evidence.">
+<title>AccessMatrix — API Authorization Testing CLI</title>
+<link rel="canonical" href="https://rizko-d.github.io/AccessMatrix/">
+<style>
+:root {color-scheme: dark; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; background:#0a0c10; color:#e6edf3; line-height:1.65}
+body {max-width:850px; margin:0 auto; padding:48px 24px}
+a {color:#79c0ff} a:focus-visible {outline:2px solid #7ee787; outline-offset:4px}
+h1 {line-height:1.2; font-size:clamp(2rem,6vw,3.5rem)} h2 {margin-top:2rem}
+small {color:#7ee787} pre {overflow:auto; padding:20px; border:1px solid #30363d; line-height:1.6}
+nav {display:flex; gap:24px; flex-wrap:wrap} footer {border-top:1px solid #30363d; margin-top:40px; padding-top:20px}
+</style>
+</head>
+<body>
+<header><small>GO / AUTHORIZATION / REGRESSION TESTING</small>
+<h1>AccessMatrix</h1><p>API Authorization Testing CLI</p>
+<p>Verify who can access what. Define identities, requests and permission expectations;
+collect assertion evidence without exporting credentials or raw response bodies.</p>
+<nav aria-label="Project"><a href="https://github.com/rizko-d/AccessMatrix">Source &amp; quick start</a><a href="https://github.com/rizko-d/AccessMatrix/blob/main/ROADMAP.md">Roadmap</a><a href="https://github.com/rizko-d/AccessMatrix/actions">CI</a></nav></header>
+<main>
+<h2>Explicit policies. Conservative verdicts.</h2>
+<ul><li>Supplied test identities, environment credentials and anonymous checks.</li><li>Identity verification and positive controls before authorization assertions.</li><li>Read-only GET/HEAD tests; terminal and JSON reports.</li><li>PASS, FAIL, INCONCLUSIVE and ERROR remain distinct.</li><li>Loopback demo in vulnerable and fixed modes; no external Go dependencies.</li></ul>
+<h2>Build locally</h2>
+<pre><code>git clone https://github.com/rizko-d/AccessMatrix.git
+cd AccessMatrix
+go build -trimpath -o bin/accessmatrix ./cmd/accessmatrix
+./bin/accessmatrix validate -config examples/demo.json
+./bin/accessmatrix demo -vulnerable</code></pre>
+<p>Use the repository quick start for the second terminal, synthetic credentials and matrix execution.</p>
+<h2>What it does not claim</h2>
+<p>A passing suite means the configured checks passed. It does not prove the API has no authorization vulnerabilities. AccessMatrix does not discover permissions, brute-force identifiers or assign severity from status codes.</p>
+</main>
+<footer>MIT licensed. <a href="https://github.com/rizko-d/AccessMatrix/blob/main/README.md">Documentation</a></footer>
+</body></html>

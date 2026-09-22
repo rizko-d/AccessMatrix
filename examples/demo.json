@@ -1,0 +1,181 @@
+{
+  "version": 1,
+  "base_url": "http://127.0.0.1:8080",
+  "timeout_ms": 5000,
+  "max_body_bytes": 1048576,
+  "identities": [
+    {
+      "name": "alice",
+      "header": "Authorization",
+      "prefix": "Bearer ",
+      "token_env": "ALICE_TOKEN",
+      "check": {
+        "path": "/me",
+        "assertions": [
+          {
+            "pointer": "/id",
+            "equals": "alice"
+          }
+        ]
+      }
+    },
+    {
+      "name": "bob",
+      "header": "Authorization",
+      "prefix": "Bearer ",
+      "token_env": "BOB_TOKEN",
+      "check": {
+        "path": "/me",
+        "assertions": [
+          {
+            "pointer": "/id",
+            "equals": "bob"
+          }
+        ]
+      }
+    },
+    {
+      "name": "admin",
+      "header": "Authorization",
+      "prefix": "Bearer ",
+      "token_env": "ADMIN_TOKEN",
+      "check": {
+        "path": "/me",
+        "assertions": [
+          {
+            "pointer": "/id",
+            "equals": "admin"
+          }
+        ]
+      }
+    },
+    {
+      "name": "anonymous",
+      "anonymous": true
+    }
+  ],
+  "tests": [
+    {
+      "id": "alice-invoice",
+      "method": "GET",
+      "path": "/invoices/alice-1",
+      "control": "alice",
+      "assertions": [
+        {
+          "pointer": "/id",
+          "equals": "alice-1"
+        },
+        {
+          "pointer": "/owner",
+          "equals": "alice"
+        }
+      ],
+      "expectations": {
+        "alice": {
+          "access": "allow",
+          "statuses": [
+            200
+          ]
+        },
+        "bob": {
+          "access": "deny",
+          "statuses": [
+            403
+          ]
+        },
+        "admin": {
+          "access": "allow",
+          "statuses": [
+            200
+          ]
+        },
+        "anonymous": {
+          "access": "deny",
+          "statuses": [
+            401
+          ]
+        }
+      }
+    },
+    {
+      "id": "bob-invoice",
+      "method": "GET",
+      "path": "/invoices/bob-1",
+      "control": "bob",
+      "assertions": [
+        {
+          "pointer": "/id",
+          "equals": "bob-1"
+        },
+        {
+          "pointer": "/owner",
+          "equals": "bob"
+        }
+      ],
+      "expectations": {
+        "alice": {
+          "access": "deny",
+          "statuses": [
+            403
+          ]
+        },
+        "bob": {
+          "access": "allow",
+          "statuses": [
+            200
+          ]
+        },
+        "admin": {
+          "access": "allow",
+          "statuses": [
+            200
+          ]
+        },
+        "anonymous": {
+          "access": "deny",
+          "statuses": [
+            401
+          ]
+        }
+      }
+    },
+    {
+      "id": "admin-users",
+      "method": "GET",
+      "path": "/admin/users",
+      "control": "admin",
+      "assertions": [
+        {
+          "pointer": "/kind",
+          "equals": "user-list"
+        }
+      ],
+      "expectations": {
+        "alice": {
+          "access": "deny",
+          "statuses": [
+            403
+          ]
+        },
+        "bob": {
+          "access": "deny",
+          "statuses": [
+            403
+          ]
+        },
+        "admin": {
+          "access": "allow",
+          "statuses": [
+            200
+          ]
+        },
+        "anonymous": {
+          "access": "deny",
+          "statuses": [
+            401
+          ]
+        }
+      }
+    }
+  ]
+}
