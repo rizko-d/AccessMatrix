@@ -167,6 +167,11 @@ func writeTable(w io.Writer, report matrix.Report) error {
 		if _, err := fmt.Fprintf(table, "%s\t%s\t%s\t%s\t%d\t%s\n", r.Test, r.Identity, r.Expected, r.Verdict, r.Status, r.Reason); err != nil {
 			return err
 		}
+		for _, assertion := range r.Assertions {
+			if _, err := fmt.Fprintf(table, "  %s matched=%t\n", assertion.Pointer, assertion.Matched); err != nil {
+				return err
+			}
+		}
 	}
 	if err := table.Flush(); err != nil {
 		return err

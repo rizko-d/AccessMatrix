@@ -44,7 +44,8 @@ func decodeJSON(b []byte) (any, error) {
 	}
 	d := json.NewDecoder(bytes.NewReader(b))
 	d.UseNumber()
-	value, err := jsonValue(d, 0)
+	remaining := 65536 // Bound allocation growth even for compact arrays and objects.
+	value, err := jsonValue(d, 0, &remaining)
 	if err != nil {
 		return nil, err
 	}
@@ -92,7 +93,11 @@ func validSurrogates(b []byte) bool {
 	return true
 }
 
-func jsonValue(d *json.Decoder, depth int) (any, error) {
+func jsonValue(d *json.Decoder, depth int, remaining *int) (any, error) {
+	if *remaining == 0 {
+		return nil, errors.New("JSON value limit exceeded")
+	}
+	*remaining -= 1
 	if depth > 128 {
 		return nil, errors.New("JSON nesting limit exceeded")
 	}
@@ -115,7 +120,7 @@ func jsonValue(d *json.Decoder, depth int) (any, error) {
 			if _, ok := m[k]; ok {
 				return nil, errors.New("duplicate JSON key")
 			}
-			v, err := jsonValue(d, depth+1)
+			v, err := jsonValue(d, depth+1, remaining)
 			if err != nil {
 				return nil, err
 			}
@@ -128,7 +133,7 @@ func jsonValue(d *json.Decoder, depth int) (any, error) {
 	case json.Delim('['):
 		values := []any{}
 		for d.More() {
-			v, err := jsonValue(d, depth+1)
+			v, err := jsonValue(d, depth+1, remaining)
 			if err != nil {
 				return nil, err
 			}

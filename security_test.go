@@ -226,7 +226,9 @@ func TestRunRejectsInvalidTLSAndNetworkFailure(t *testing.T) {
 	s.Config.ErrorLog = log.New(io.Discard, "", 0)
 	s.StartTLS()
 	defer s.Close()
-	for _, origin := range []string{s.URL, "http://127.0.0.1:1"} {
+	closed := httptest.NewServer(http.HandlerFunc(func(http.ResponseWriter, *http.Request) {}))
+	closed.Close()
+	for _, origin := range []string{s.URL, closed.URL} {
 		r, err := Run(context.Background(), configFor(t, origin), credentials)
 		if err != nil || len(r.Results) != 2 || r.Results[0].Verdict != "ERROR" || hits.Load() != 0 {
 			t.Fatalf("unsafe transport: %+v %v", r, err)

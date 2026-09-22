@@ -61,6 +61,17 @@ func TestCLIValidationAndRun(t *testing.T) {
 		if strings.Contains(out.String(), "demo-alice-token") {
 			t.Fatal("credential in report")
 		}
+		out.Reset()
+		stderr.Reset()
+		if code := run(context.Background(), []string{"run", "-config", path}, &out, &stderr); code != want {
+			t.Fatalf("table code=%d", code)
+		}
+		if !strings.Contains(out.String(), `/id matched=true`) || !strings.Contains(out.String(), `/owner matched=false`) {
+			t.Fatal("terminal report omits assertion evidence")
+		}
+		if strings.Contains(out.String(), "demo-alice-token") {
+			t.Fatal("credential in terminal report")
+		}
 		// Report files are private and existing files are not replaced.
 		destination := filepath.Join(t.TempDir(), "result.json")
 		if code := run(context.Background(), []string{"run", "-config", path, "-format", "json", "-output", destination}, &out, &stderr); code != want {

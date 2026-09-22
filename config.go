@@ -181,7 +181,7 @@ func Validate(c Config) error {
 		if !(strings.EqualFold(id.Header, "Authorization") || keyHeader.MatchString(id.Header)) || len(id.Header) > 128 || !envName.MatchString(id.TokenEnv) || !printable(id.Prefix) || len(id.Prefix) > 256 {
 			return errors.New("invalid credential configuration")
 		}
-		if id.Check == nil || !validPath(id.Check.Path) || !validAssertions(id.Check.Assertions, true) {
+		if id.Check == nil || !validPath(id.Check.Path) || !validAssertions(id.Check.Assertions) {
 			return errors.New("identity check requires a safe path and equality proof")
 		}
 	}
@@ -197,7 +197,7 @@ func Validate(c Config) error {
 		if !validPath(test.Path) {
 			return errors.New("invalid test path")
 		}
-		if test.Method == "HEAD" && len(test.Assertions) != 0 || test.Method == "GET" && !validAssertions(test.Assertions, true) {
+		if test.Method == "HEAD" && len(test.Assertions) != 0 || test.Method == "GET" && !validAssertions(test.Assertions) {
 			return errors.New("invalid resource assertions")
 		}
 		if !names[test.Control] || test.Expectations[test.Control].Access != "allow" {
@@ -301,7 +301,7 @@ func validPath(s string) bool {
 	return false
 }
 
-func validAssertions(assertions []Assertion, requireEquality bool) bool {
+func validAssertions(assertions []Assertion) bool {
 	if len(assertions) > 128 {
 		return false
 	}
@@ -320,7 +320,7 @@ func validAssertions(assertions []Assertion, requireEquality bool) bool {
 			hasEquality = true
 		}
 	}
-	return !requireEquality || hasEquality
+	return hasEquality
 }
 
 func validPointer(p string) bool {

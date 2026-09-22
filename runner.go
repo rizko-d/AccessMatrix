@@ -94,7 +94,6 @@ func Run(ctx context.Context, c Config, lookup func(string) (string, bool)) (rep
 	}
 	transport := &http.Transport{Proxy: nil, DisableKeepAlives: true, DisableCompression: true, MaxResponseHeaderBytes: 64 << 10}
 	defer transport.CloseIdleConnections()
-	client := &http.Client{Transport: transport, CheckRedirect: func(*http.Request, []*http.Request) error { return http.ErrUseLastResponse }}
 	for i, id := range c.Identities {
 		if id.Anonymous {
 			continue
@@ -102,7 +101,7 @@ func Run(ctx context.Context, c Config, lookup func(string) (string, bool)) (rep
 		if err := ctx.Err(); err != nil {
 			return report, err
 		}
-		obs := request(ctx, client, c, id, values[i], "GET", id.Check.Path, id.Check.Assertions)
+		obs := request(ctx, transport, c, id, values[i], "GET", id.Check.Path, id.Check.Assertions)
 		if err := ctx.Err(); err != nil {
 			return report, err
 		}
@@ -130,7 +129,7 @@ func Run(ctx context.Context, c Config, lookup func(string) (string, bool)) (rep
 			}
 		}
 		control := c.Identities[controlIndex]
-		obs := request(ctx, client, c, control, values[controlIndex], test.Method, test.Path, test.Assertions)
+		obs := request(ctx, transport, c, control, values[controlIndex], test.Method, test.Path, test.Assertions)
 		if err := ctx.Err(); err != nil {
 			return report, err
 		}
@@ -151,7 +150,7 @@ func Run(ctx context.Context, c Config, lookup func(string) (string, bool)) (rep
 			if err := ctx.Err(); err != nil {
 				return report, err
 			}
-			obs := request(ctx, client, c, id, values[i], test.Method, test.Path, test.Assertions)
+			obs := request(ctx, transport, c, id, values[i], test.Method, test.Path, test.Assertions)
 			if err := ctx.Err(); err != nil {
 				return report, err
 			}
@@ -169,7 +168,7 @@ type observation struct {
 	assertions []AssertionResult
 }
 
-func request(ctx context.Context, client *http.Client, c Config, id Identity, token, method, path string, assertions []Assertion) observation {
+func request(ctx context.Context, transport *http.Transport, c Config, id Identity, token, method, path string, assertions []Assertion) observation {
 	ctx, cancel := context.WithTimeout(ctx, time.Duration(c.TimeoutMS)*time.Millisecond)
 	defer cancel()
 	r, err := http.NewRequestWithContext(ctx, method, c.BaseURL+path, nil)
@@ -179,7 +178,8 @@ func request(ctx context.Context, client *http.Client, c Config, id Identity, to
 	if !id.Anonymous {
 		r.Header.Set(id.Header, id.Prefix+token)
 	}
-	response, err := client.Do(r)
+	// RoundTrip returns redirects without parsing Location or following it.
+	response, err := transport.RoundTrip(r)
 	if err != nil {
 		return observation{reason: "request_failed"}
 	}
@@ -253,9 +253,15 @@ func classify(test Test, id Identity, o observation) Result {
 			}
 		}
 	} else {
+		partial := false
+		for _, assertion := range o.assertions {
+			partial = partial || assertion.Matched
+		}
 		if test.Method == "GET" && o.matched {
 			r.Verdict = "FAIL"
 			r.Reason = "protected_resource_returned"
+		} else if partial {
+			r.Reason = "partial_resource_evidence"
 		} else if expectedStatus {
 			r.Verdict = "PASS"
 			r.Reason = "expected_denial"

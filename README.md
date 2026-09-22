@@ -167,7 +167,7 @@ An existence check alone does not prove resource identity. Choose equality asser
 | `INCONCLUSIVE` | A response cannot establish the authorization outcome. |
 | `ERROR` | Execution, prerequisites, or response processing failed. |
 
-For GET denial tests, matching all protected-resource assertions is evidence of a failure—even when the server returns a denial status. Unexpected success responses without matching resource evidence remain inconclusive.
+For GET denial tests, matching all protected-resource assertions is evidence of a failure—even when the server returns a denial status. Partial assertion matches on denied GET requests remain INCONCLUSIVE, even with an expected denial status. Unexpected success responses without matching resource evidence remain inconclusive.
 Rate limits, server failures and redirects remain INCONCLUSIVE even if their bodies match resource assertions. Other GET responses must contain valid JSON; empty, malformed or oversized denial bodies produce ERROR, not PASS. HEAD cannot prove body disclosure and has narrower evidence than GET.
 Identity-check failures prevent authorization testing. A failed positive control blocks dependent checks instead of producing misleading passes.
 

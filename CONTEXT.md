@@ -8,7 +8,7 @@
 - **Expectation:** explicit `allow` or `deny` plus a nonempty set of acceptable statuses for each selected identity in a test. Omitted expectations do not execute a request or produce a result row. Allow statuses are 200–299; deny statuses are 400–499 excluding 429.
 - **Positive control:** explicit identity expected to be allowed. It executes first for each test regardless of identity listing order. Every dependent row requires its PASS.
 - **Matrix:** tests in configuration order, each with explicitly selected identities in configuration order. Execution order may differ to run the control first; result order does not.
-- **PASS:** expected allow status with matching proof, or expected denial status without matching protected resource proof. HEAD confirms status only.
+- **PASS:** expected allow status with matching proof, or expected denial status with no matching resource assertions. HEAD confirms status only.
 - **FAIL:** allow receives 401/403/404 with a valid response, or denied GET returns the matching protected resource even under a denial status.
 - **INCONCLUSIVE:** redirects, 429, 5xx, unexpected 2xx/4xx, or allow assertion mismatch. Denied HEAD 2xx is always inconclusive.
 - **ERROR:** unsafe/incomplete observation or blocked prerequisite; never evidence of correct denial.
